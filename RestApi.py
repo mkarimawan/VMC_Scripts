@@ -5,7 +5,7 @@ from colorama import init
 from colorama import Fore, Back, Style
 
 def login():
-    key = 'SetRefreshtokenHere'
+    #key = ''
     baseurl = 'https://console.cloud.vmware.com/csp/gateway'
     uri = '/am/api/auth/api-tokens/authorize'
     headers = {'Content-Type':'application/json'}
@@ -51,8 +51,9 @@ def displaySDDCList(sddcList):
         print("SDDC Region: " + sddc['resource_config']['region'])
         print("SDDC ID: " + sddc['id'])
    
-def deleteSDDC(auth_header, orgList, sddcID):
+def deleteSDDC(auth_header, orgList, sddcIndex):
     orgID = orgList.json()[0]['id']
+    sddcID = sddcList.json()[sddcIndex]['id']
     r = requests.delete(f'https://vmc.vmware.com/vmc/api/orgs/{orgID}/sddcs/{sddcID}', headers = auth_header)
     return r
 
@@ -67,19 +68,19 @@ def addSDDC(auth_header, orgList):
     orgID = orgList.json()[0]['id']
     strRequest = {
         "num_hosts": "4",
-        "name": "JD-API",
-        "provider": "AWS",
+        "name": "MK-Test-API",
+        "provider": "ZEROCLOUD",
         "region": "EU_WEST_2",
         "account_link_sddc_config":
             [
                 {
                     "customer_subnet_ids": ["subnet-d9d9de94"],
-                    "connected_account_id": "fbf80adb-5c95-3cae-bfb4-4f6df3ccdb5c"
+                    "connected_account_id": "def702b1-333c-4219-af22-206ac6e3ed66"
                 }
             ],
         "sddc_type": "",
         "deployment_type": "SingleAZ",
-        "vxlan_subnet": "10.25.0.0/23"
+        "vxlan_subnet": "10.75.0.0/23"
     }
     
     r = requests.post(f'https://vmc.vmware.com/vmc/api/orgs/{orgID}/sddcs', headers = auth_header, json = strRequest)
@@ -119,11 +120,11 @@ def exec_menu(choice):
             elif ch == '5':     
                 #print ("Not yet implemented")
                 r = addSDDC(auth_header, orgList)
-                print (Fore.GREEN + "SDDC Creation - " + str(r.status_code) + Fore.RESET)
+                print (Fore.GREEN + "SDDC Creation in Progress - " + str(r.status_code) + Fore.RESET)
             # Delete SDDC
             elif ch == '6':
-                sddcID = input(" Enter SDDC ID:  ")
-                r = deleteSDDC(auth_header, orgList, sddcID)
+                sddcIndex = int(input(" Enter SDDC Index:  "))
+                r = deleteSDDC(auth_header, orgList, sddcIndex)
                 if r.status_code != 202:
                     print (Fore.RED + "Delete failed : " + str(r.status_code) + Fore.RESET)
                 else:
@@ -137,7 +138,7 @@ def exec_menu(choice):
                 else:
                     print(Fore.GREEN + 'Add host successful. ' + Fore.RESET)
             elif ch == '0':     
-                print ("So long, and thanks for all the fish.")
+                print ("Thanks for using this service. Have a great day!")
                 sys.exit(0)
             else:
                 print (Fore.RED + "Invalid selection, please try again." + Fore.RESET)
@@ -159,7 +160,7 @@ def main():
     print ("2. Update VMC Data")    
     print ("3. List VMC Organisations available")
     print ("4. List available SDDCs")
-    print ("5. Provision new SDDC (not yet implemented)")
+    print ("5. Provision new SDDC")
     print ("6. Delete existing SDDC")
     print ("7. Add ESX Host (not yet implemented)")
     print ("0. Exit")
@@ -182,3 +183,4 @@ sddcList = None
 
 if __name__ == '__main__':
     main()
+    
